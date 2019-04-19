@@ -33,27 +33,6 @@ class DataProcessor:
         faculties = {}
         groups = {}
 
-        i = 0
-        for lesson in data['lessons']:
-            if courses.get(lesson[0]) is None:
-                courses[lesson[0]] = i
-                DataProcessor.denumeration_data['courses'].append(lesson[0])
-                i += 1
-
-        i = 0
-        for lesson in data['lessons']:
-            if faculties.get(lesson[3]) is None:
-                faculties[lesson[3]] = i
-                DataProcessor.denumeration_data['faculties'].append(lesson[3])
-                i += 1
-
-        i = 0
-        for group in data['student_groups']:
-            if groups.get(group[0]) is None:
-                groups[group[0]] = i
-                DataProcessor.denumeration_data['student_groups'].append(group[0])
-                i += 1
-
         for data_type in data:
             entry_number = 0
             for entry in data[data_type]:
