@@ -1,0 +1,11 @@
+[
+  {
+    "model": "profile.userprofile",
+    "pk": 3,
+    "fields": {
+      "name": "Test user",
+      "surname": "Test surname",
+      "user": 1
+    }
+  }
+]

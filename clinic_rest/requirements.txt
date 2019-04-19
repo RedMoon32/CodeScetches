@@ -1,0 +1,6 @@
+Django
+djangorestframework
+jwt
+redis
+pyjwt
+django-cors-headers

@@ -1,0 +1,354 @@
+openapi: 3.0.0
+info:
+  title: Simple API overview
+  version: 1.0.0.1-alpha
+
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+
+  responses:
+    UnauthorizedError:
+      description: Authentications credetials is not provided
+
+  schemas:
+    Profile:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The user name.
+        surname:
+          type: string
+          description: The user surname.
+        points:
+          type: integer
+          description: The user points amount.
+        xp:
+          type: integer
+          description: The user expirience amout.
+    TaskCreate:
+      type: "object"
+      properties:
+        title:
+          type: "string"
+        description:
+          type: "string"
+        event_ime:
+          type: "string"
+          example: "2018-08-20"
+        xp_points:
+          type: "integer"
+          format: "int64"
+        inno_points:
+          type: "integer"
+          format: "int64"
+        applications:
+          readOnly: true
+          description: "For users it shows only his application of associated task, for creator of task it represents all application"
+          type: "array"
+          items:
+            $ref: "#/components/schemas/Application"
+    Application:
+      type: "object"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          description: "id of application"
+        volunteer:
+          readOnly: true
+          type: "string"
+          description: "mail of participating volunteer"
+          example: "r.test@mail.com"
+        status:
+          type: "string"
+          enum:
+          - "PENDING"
+          - "CANCELLED"
+          - "FINISHED"
+          - "ACCEPTED"
+          - "DECLINED"
+        inno_points:
+          type: "integer"
+          description: "Number of inno_points awarded to particular user fo current task(can differ from number inno_points attribute of task because owner can distribute an unequal number of points"
+        task:
+          type: "integer"
+          readOnly: true
+          description: "Task id"
+    TaskEditGet:
+      properties:
+        id:
+          type: integer
+      allOf:
+      - $ref: '#/components/schemas/TaskCreate'
+
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /login:
+    post:
+      tags:
+      - "profile"
+      summary: "Authorization"
+      description:  "Auth"
+      parameters:
+      - name: "username"
+        in: "query"
+        required: True
+        schema:
+          type: string
+        description: "This is user username"
+      - name: "password"
+        in: "query"
+        required: True
+        schema:
+          type: string
+        description: "This is user password"
+      security: []
+      responses:
+        201:
+          description: 'Logged in user profile is returned'
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: sessionid=abcde12345; HttpOnly
+        400:
+          description: "Invalid parameters"
+
+  /profile/userinfo:
+    get:
+      tags:
+      - "profile"
+      summary: "User information"
+      description: "Get username, innopoints, xp"
+      responses:
+        200:
+          description: 'Current user profile is returned'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        401:
+           $ref: "#/components/responses/UnauthorizedError"
+  /tasks/:
+    post:
+      tags:
+      - "tasks"
+      summary: "Add a new task"
+      description: ""
+      requestBody:
+        description: "Task to create"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskCreate"
+      responses:
+        405:
+          description: "Invalid input"
+        200:
+          description: "Successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskEditGet"
+    get:
+      tags:
+      - "tasks"
+      summary: "Get all existing tasks"
+      description: "Return array of tasks, each task has a application attribute, for creator of task it shows applications and for usual owner it shows his application(if applied) or empty"
+      responses:
+        200:
+          description: "Object has been sent"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/TaskEditGet"
+  /tasks/my/:
+    get:
+      tags:
+      - "tasks"
+      summary: "Get tasks that user created"
+      description: ""
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/TaskEditGet"
+    patch:
+      tags:
+      - "tasks"
+      summary: "Update an existing task"
+      description: "Update task (only for user created it)"
+      requestBody:
+        description: "Task to be updated"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskEditGet"
+      responses:
+        200:
+          description: "successful operation, returns updated task"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskEditGet"
+        400:
+          description: "Invalid fields"
+    delete:
+      tags:
+      - "tasks"
+      summary: "Close an existing task"
+      description: "Close task (only for user created it), status of task becomes is_active=false,all participating users with applications of status ACCEPTED change status to FINISHED and automatically got their inno_points and xp_award, all PENDING applications change status to CANCELLED,inno_points attribute must be less or equal to the inno_points attribute of refered task"
+      requestBody:
+        description: "Task to be closed"
+        required: true
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: "id of task"
+      responses:
+        200:
+          description: "successfully closed task"
+        400:
+          description: "Invalid fields"
+        404:
+          description: "TaskNotFound"
+  /applications/:
+    get:
+      tags:
+      - "applications"
+      summary: "Return applications for some task"
+      description: ""
+      parameters:
+        - name: "id"
+          in: "query"
+          description: "ID of task to return"
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/Application"
+        400:
+          description: "Invalid fields"
+        404:
+          description: "Application not found"
+    post:
+      tags:
+      - "applications"
+      summary: "Update application status(for creator of task of applied application)"
+      description: "Owner updates status only to ACCEPTED or DECLINED if is in PENDING state, or changes to FINISHED if application was accepted (also need to provide number of inno_points to award particular user).Owner can not change declined(pending) to finished,or finished to some other(but can finished to finished), but it can change number of inno_points awarded by sending finished to finished update with different inno_points attribute"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object # Request body contents
+              description: "Task to be closed"
+              properties:
+                id:
+                  type: "integer"
+                status:
+                  type: "string"
+                  enum:
+                  - "ACCEPTED"
+                  - "DECLINED"
+                  - "FINISHED"
+                inno_points:
+                  type: "integer"
+                  description: "required if statusis finished"
+      responses:
+        400:
+          description: "Invalid input(or Constrains are violated)"
+        404:
+          description: "Application was not found"
+        200:
+          description: "Status was successfully updated"
+  /applications/my/:
+    get:
+      tags:
+      - "applications"
+      summary: "Return tasks which user has applied to"
+      description: ""
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/TaskEditGet"
+        404:
+          description: "application not found"
+    delete:
+      tags:
+      - "applications"
+      summary: "Cancel application for some task (for users)"
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:
+              required: true# Request body contents
+              type: object
+              properties:
+                id:
+                  type: integer
+                  description: "id of application to close"
+      responses:
+        200:
+          description: "successfully closed"
+        404:
+          description: "task not found"
+    post:
+      tags:
+      - "applications"
+      summary: "Apply for some task"
+      description: ""
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              description: "Task to apply"
+              properties:
+                id:
+                  type: integer
+                  description: "id of task to apply"
+      responses:
+        200:
+          description: "New created application"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        409:
+          description: "User has already applied for task"
+        404:
+          description: "Task not found "

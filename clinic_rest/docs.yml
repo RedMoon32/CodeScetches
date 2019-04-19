@@ -1,0 +1,228 @@
+openapi: 3.0.0
+info:
+  title: Clinic Api
+  version: 1.0.0-alpha
+
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+
+  responses:
+    UnauthorizedError:
+      description: Authentications credetials is not provided
+
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /login/:
+    post:
+      tags:
+      - "profile"
+      summary: "Authorization"
+      description:  "Log into system"
+
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              description: "Username"
+              properties:
+                username:
+                  type: string
+                  description: "Username"
+                password:
+                  type: string
+                  description: "Hashed Password"
+      responses:
+        200:
+          description: 'Token is returned'
+          content:
+            application/json:
+              schema:      # Request body contents
+                type: object
+                description: "token"
+                properties:
+                  token:
+                    type: string
+                    description: "auth tojen"
+        401:
+          description: "Not authorized, invalid parameters"
+
+  /profile/:
+    get:
+      tags:
+      - "profile"
+      summary: "User information"
+      description: "Get username profile information"
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          description: 'Current user profile is returned'
+          content:
+            application/json:
+              schema:      # Request body contents
+                type: object
+                description: "Username"
+                properties:
+                  username:
+                    type: string
+                    description: "Username"
+                  sex:
+                    type: string
+                    description: "male/female"
+                  age:
+                    type: integer
+                    description: "age"
+                  address:
+                    type: string
+                    description: "address"
+                  first_name:
+                    type: string
+                    description: "First name"
+                  last_name:
+                    type: string
+                    description: "Last name"
+
+        400:
+           description: 'User Not found'
+  /register/:
+    post:
+      tags:
+      - "profile"
+      summary: "Authorization"
+      description:  "Auth"
+
+      requestBody:
+        content:
+          application/json:
+              schema:      # Request body contents
+                type: object
+                description: "Username"
+                properties:
+                  username:
+                    type: string
+                    description: "Email"
+                  first_name:
+                    type: string
+                    description: "First name"
+                  last_name:
+                    type: string
+                    description: "Last name"
+                  password:
+                    type: string
+                    description: "Password"
+                  sex:
+                    type: string
+                    description: "male/female"
+                  age:
+                    type: integer
+                    description: "age"
+                  address:
+                    type: string
+                    description: "address"
+
+      responses:
+        200:
+          description: "Successfully registered"
+        401:
+          description: "Not all fields provided"
+  /appointments/:
+    post:
+      tags:
+      - "clinic"
+      summary: "Create appointments"
+      description:  "Create appointment (user can create for himself as patient and any doctor, doctor - any patient and doctor as himself, receptionist can create for any doctors and patients"
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:      # Request body contents
+              type: object
+              description: "Username"
+              properties:
+                doctor:
+                  type: string
+                  description: "Doctors email"
+                patient:
+                  type: string
+                  description: "Patiens email"
+                date:
+                  type: string
+                  description: "Date in format (05.10.1999)"
+                time:
+                  type: integer
+                  description: "Number of timeslot"
+      responses:
+        200:
+          description: 'Application created'
+        401:
+          description: "Not authorized"
+        400:
+          description: "Can not create"
+    get:
+      tags:
+      - "clinic"
+      summary: "Get appointments"
+      description:  "Get appointments (for patient/doctor will return his appointemtns , for receptionist - all apps)"
+      responses:
+        200:
+          description: 'Application returned'
+          content:
+            application/json:
+              schema:      # Request body contents
+                type: object
+                description: "Appointment"
+                properties:
+                  doctor:
+                    type: string
+                    description: "Doctors email"
+                  patient:
+                    type: string
+                    description: "Patiens email"
+                  date:
+                    type: string
+                    description: "Date in format (05.10.1999)"
+                  time:
+                    type: integer
+                    description: "Number of timeslot"
+        401:
+          description: "Not authorized"
+  /doctors/:
+    get:
+      tags:
+      - "clinic"
+      summary: "Get doctors"
+      description:  "Get list of doctors"
+      responses:
+        200:
+          description: 'List of doctors is returned'
+          content:
+            application/json:
+              schema:      # Request body contents
+                type: object
+                description: "Doctor"
+                properties:
+                  doctor:
+                    type: string
+                    description: "Doctors email"
+                  name:
+                    type: string
+                    description: "Doctors name"
+                  room:
+                    type: integer
+                    description: "Number of room"
+                  type:
+                    type: string
+                    description: "Doctors specialization"
+        401:
+          description: "Not authorized, invalid parameters"
+

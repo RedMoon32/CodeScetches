@@ -1,0 +1,17 @@
+[
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$120000$qrQ115GjSj6K$CpTUGkOOnBo85zLYCpvPdDKamW4PHTU9spf6DI4QH3s=",
+      "is_superuser": true,
+      "username": "test@innopolis.ru",
+      "first_name": "",
+      "last_name": "",
+      "email": "test@innopolis.ru",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2018-10-03T12:15:42.275Z"
+    }
+  }
+]
