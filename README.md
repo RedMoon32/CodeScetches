@@ -6,6 +6,6 @@ Here i uploaded some of code i've written, but which was on private GitLab repos
 - Innopoints Api - part of api for innopoints system
 
 ### Also interesting links:
-- [P2P node implementation on C over tcp protocol](https://github.com/RedMoon32/NetworkLabs/blob/master/week10/node.c) 
+- [P2P file-sharing-node implementation on C over tcp protocol](https://github.com/RedMoon32/NetworkLabs/blob/master/week10/node.c) 
 - [Group project - Library management system](https://github.com/LibrinnoTeam/LibraryHelpBot)
 - [Generating images using genetic algorithm](https://github.com/RedMoon32/GAImages)
